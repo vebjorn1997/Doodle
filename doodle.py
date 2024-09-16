@@ -1,10 +1,10 @@
 from turtle import Turtle, Screen
 import random
 import argparse
-import PIL
-
-import PIL.Image
-import PIL.ImageGrab
+import subprocess
+import os
+import docker
+import docker.errors
 
 def draw_rectangle(t: Turtle, startpos: tuple[float, float], width: float, height: float, color: tuple[int, int, int] = (0,0,0), fill: bool = False):
     """
@@ -107,25 +107,7 @@ def draw_bangladesh_flag(t: Turtle, start_x: int = 0, start_y: int = 0, fraction
     # Border
     draw_rectangle(t, (start_x, start_y), fraction_size*12, fraction_size*20)
 
-def configure(t: Turtle, screen: Screen):
-    """    Configures the screen settings    """
-    screen.setup(1.0, 1.0)
-    screen.title("Doodle")
-    screen.bgcolor("black")
-    screen.colormode(255)
-    t.speed(0)
-    t.hideturtle()
-
-def main():
-    t = Turtle()
-    screen = Screen()
-    configure(t, screen)
-
-    parser = argparse.ArgumentParser(description="Draw a number of flags depending on the input value given")
-    parser.add_argument("user_input", type=int, choices=[1, 2, 3], help="Define which flag is created; 1 for Norway, 2 for Bangladesh, 3 for Sweden")
-    parser.add_argument("output_file", type=str, help="File to store the flag data")
-    args = parser.parse_args()
-
+def draw(screen: Screen, t: Turtle, args: argparse.Namespace): 
     for _ in range(1):
         fraction_size = random.randint(1, 5) * 10
         start_x = random.randint(
@@ -143,9 +125,56 @@ def main():
             draw_bangladesh_flag(t, start_x, start_y, fraction_size)
         else:
             draw_sweden_flag(t, start_x, start_y, fraction_size)
-    PIL.ImageGrab.grab().save('art.png')
-    
 
+def configure(t: Turtle, screen: Screen):
+    """    Configures the screen settings    """
+    screen.setup(1.0, 1.0)
+    screen.title("Doodle")
+    screen.bgcolor("black")
+    screen.colormode(255)
+    t.speed(0)
+    t.hideturtle()
+
+def build_image(client: docker.DockerClient):
+    """    Builds the image using the Dockerfile    """
+    docker_name="doodle-converter"
+    try:
+        print("Building image...")
+        if len(client.images.list(name=docker_name)) > 0:
+            print("Image already exists")
+        else:
+            client.images.build(path=".", forcerm=True, tag=docker_name)
+    except docker.errors.BuildError as e:
+        print(e)
+
+def convert_to_png(client: docker.DockerClient, args):
+    cwd = os.getcwd()
+    try:
+        print("Converting to PNG...")
+        client.containers.run("doodle-converter", command=f"{args.output_file}.ps {args.output_file}.png", volumes={f"{cwd}": {"bind": "/app", "mode": "rw"}}, auto_remove=True)
+    except docker.errors.ContainerError or docker.errors.APIError as e:
+        print(e)
+
+def main():
+    t = Turtle()
+    screen = Screen()
+    client = docker.from_env()
+    configure(t, screen)
+
+    # Argument parser
+    parser = argparse.ArgumentParser(description="Draw a number of flags depending on the input value given. The program requires a running version of Docker.")
+    parser.add_argument("user_input", type=int, choices=[1, 2, 3], help="Define which flag is created; 1 for Norway, 2 for Bangladesh, 3 for Sweden")
+    parser.add_argument("output_file", type=str, help="File to store the flag data")
+    args = parser.parse_args()
+
+    build_image(client)
+    draw(screen, t, args)
+    
+    # Save as PS
+    t.getscreen().getcanvas().postscript(file=f"{args.output_file}.ps")
+    
+    # Convert to PNG
+    convert_to_png(client, args)
 
 
 if __name__ == "__main__":
