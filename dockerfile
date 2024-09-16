@@ -1,6 +1,5 @@
 FROM ubuntu
 
-# Install ImageMagick and Ghostscript (required for handling .ps files)
 RUN apt-get update && apt-get install -y \
     ghostscript \
     imagemagick \
