@@ -148,6 +148,7 @@ def build_image(client: docker.DockerClient):
         print(e)
 
 def convert_to_png(client: docker.DockerClient, args):
+    """    Converts the PS file to PNG using the container    """
     cwd = os.getcwd()
     try:
         print("Converting to PNG...")
