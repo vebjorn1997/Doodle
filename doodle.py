@@ -219,7 +219,7 @@ def draw_bangladesh_flag(
 
 
 def draw(screen: Screen, t: Turtle, args: argparse.Namespace):
-    for _ in range(1):
+    for _ in range(random.randint(1, 5)):
         fraction_size = random.randint(1, 5) * 10
         start_x = random.randint(
             int(-screen.window_width() / 2),
@@ -236,6 +236,7 @@ def draw(screen: Screen, t: Turtle, args: argparse.Namespace):
             draw_bangladesh_flag(t, start_x, start_y, fraction_size)
         else:
             draw_sweden_flag(t, start_x, start_y, fraction_size)
+
 
 
 def configure(t: Turtle, screen: Screen):
