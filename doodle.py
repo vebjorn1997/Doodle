@@ -238,7 +238,6 @@ def draw(screen: Screen, t: Turtle, args: argparse.Namespace):
             draw_sweden_flag(t, start_x, start_y, fraction_size)
 
 
-
 def configure(t: Turtle, screen: Screen):
     """Configures the screen settings"""
     screen.setup(1.0, 1.0)
