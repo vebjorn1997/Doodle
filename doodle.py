@@ -5,6 +5,16 @@ import os
 import docker
 import docker.errors
 
+def teleport(t: Turtle, x: float, y: float):
+    """
+    Teleports the turtle to the given position
+    :param t: Turtle object
+    :param x: x position
+    :param y: y position
+    """
+    t.penup()
+    t.goto(x, y)
+    t.pendown()
 
 def draw_rectangle(
     t: Turtle,
@@ -23,7 +33,7 @@ def draw_rectangle(
     :param color: Color of the rectangle
     :param fill: If the rectangle should be filled or not
     """
-    t.teleport(x=startpos[0], y=startpos[1])
+    teleport(t, startpos[0], startpos[1])
     t.color((color))
     if fill:
         t.begin_fill()
@@ -52,7 +62,7 @@ def draw_circle(
     :param color: Color of the circle
     :param fill: If the circle should be filled or not
     """
-    t.teleport(x=startpos[0], y=startpos[1])
+    teleport(t, startpos[0], startpos[1])
     t.color((color))
     if fill:
         t.begin_fill()
